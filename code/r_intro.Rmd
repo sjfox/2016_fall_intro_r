@@ -1,0 +1,202 @@
+---
+title: "Introduction to R and the tidyverse"
+author: "Spencer Fox"
+date: "October 20, 2016"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message = FALSE)
+```
+
+# Introduction
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML and PDF documents. R Markdown documents are useful for interspersing formatted text with `code`. There are many ways to write formatted text within markdown, and RStudio hosts a good [cheatsheet (See section #3)](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf).
+
+You run R code within chunks either line-by-line (ctrl-enter or cmd-enter), or all at once (see keyboard shortcuts). To do so, place your cursor on a line of code, and then press the keys to run the line. 
+
+## Installing and Loading Packages
+Here is a chunk of R code that installs and loads the package `rgl`. If you don't have the package installed, make sure to uncomment (remove the `#` in front of the first line) and run both lines. You can also install packages using the install button on the packages pane in RStudio.
+
+```{r}
+# install.packages('rgl')
+library(rgl)
+
+```
+
+# Using package functions
+The `rgl` package is used for 3D visualization. The next chunk of code shows how we can download and plot the Churyumov–Gerasimenko comet 3D data from online. Anyone know what comet this is? Hint: we landed something on it in 2014. Note: You can supply arguments to chunks that can customize the behavior of those chunks. This chunk has the argument `cache=TRUE` supplied to it. This just tells the chunk to store the comet variable, which makes the document quicker to run if you convert it to html multiple times.
+
+```{r, cache=TRUE}
+comet <- readOBJ(url("http://sci.esa.int/science-e/www/object/doc.cfm?fobjectid=54726"))
+open3d()
+shade3d(comet, col="gray")
+```
+
+
+Check out the environment pane on the top right of the RStudio screen. What do you notice? I tend to glance at that pane every once in a while to make sure variables are being created and changed as expected. e.g. we created the `comet` variable in the previous chunk, so we can check to make sure it's there.
+
+
+## Exercise 1
+That's pretty cool right? Copy the code from above into the next chunk and change the color of the comet that prints. Do you need to rerun all three lines? 
+
+```{r, cache=TRUE}
+# Copy R code here
+
+```
+
+## Exercise 1 (extended)
+In the extension we are going to work with the `ggmap` package that allows for some cool map plotting in R. First install and load the `ggmap` package.
+
+```{r}
+library(ggmap)
+
+## Plot a map of texas -- Notice it searches an online database for maps matching "texas"
+qmap("texas", zoom=6, color="bw")
+
+## Plot a map of UT now
+qmap("University of Texas at Austin", zoom=15)
+
+```
+
+Copy one of the `qmap()` lines of code from the previous chunk, and paste it in the next chunk. Change the number for the `zoom` parameter (Can only be 3-21), and change the location within the quotes. Can you get a map of Africa, how about one of your hometown?
+
+```{r}
+# R code here
+
+```
+
+---------------------------
+
+# Introduction to dplyr
+
+Now that you know how to use R Markdown and have learned about variables and functions, let's play around with data frames using the tidyverse. Follow along with this during the presentation portion. The `tidyverse` is a system of packages created by [Hadley Wickham](http://hadley.nz/) that provide consistent and intuitive syntax for manipulating, analyzing, and visualizing data.
+
+## Using `filter`, `select`, and `%>%`
+The `filter` and `select` functions allow for easy subsetting of the data (selecting specific portions). `filter` extracts rows fulfilling a specified expression, and `select` extracts columns specified by name or index (number). You can also select columns by giving the function columns you don't want by simply adding a "-" in front of the column name.
+
+We can link functions/commands together using the `%>%` operator. `%>%` takes the output of the left function or variable and puts it by default as the first argument to the right function. So `df %>% head()` is the same as `head(df)`.
+
+```{r}
+library(tidyverse)
+library(gapminder)
+
+# These next two lines do the same thing
+gapminder %>% head()
+head(gapminder)
+
+gapminder %>% filter(year==1952)
+
+# These next two lines result in the same data frame
+gapminder %>% select(country:year)
+gapminder %>% select(country, continent, year)
+
+# We can link multiple statements together
+# So if we want all the population data for year 1952 we could do this:
+gapminder %>% filter(year==1952) %>%
+  select(country, year, pop)
+```
+
+### Exercise 2a
+
+Try to use `filter()` and `select()` to subset your data to include only the country, year, and life expectancy data from Belgium. 
+
+```{r}
+# R Code here
+
+```
+
+## Using `mutate`, `group_by`, and `summarise`
+The `mutate` is a function that can add columns to data frames. Often times we make new columns in data frames out of combinations of old columns, and `mutate` makes this fairly straightforward. 
+
+`group_by` and `summarise` are commonly used in tandem. Often times we want to summarise data for a specific group of data. For example if we had data for the heights of all people on campus, we might want to know the mean for the two genders. We first would group our data by the gender, and then summarise the data with the mean.
+
+```{r}
+# Add a gdp column using the per capita gdp and total population
+gapminder %>% mutate(gdp = gdpPercap * pop) 
+
+# Notice how the group component is added on
+gapminder %>% group_by(year) 
+
+# Once things are grouped, we can summarize multiple rows like this
+gapminder %>% group_by(year) %>%
+  summarise(mean_pc_gdp = mean(gdpPercap))
+
+# This is how we would save the resultant data frame, and we could
+# do this for any of the previous chunk statements.
+avg_gdp_by_year <- gapminder %>% group_by(year) %>%
+  summarise(mean_pc_gdp = mean(gdpPercap))
+  
+
+```
+
+### Exercise 2b
+
+Try to use `mutate()`, `group_by`, and summarise to subset your data to add on a gdp column to `gapminder`, and then find the average gdp for each country. 
+
+```{r}
+# R Code here
+
+```
+
+----------------------------------------
+
+# Introduction to ggplot2 and tidyr
+Now we're going to discuss visualizing data using the `ggplot2` package. In doing so, we will also discover why tidy data is easy to work with, and therefore will learn about data reshaping/manipulation using `tidyr`. 
+
+## Basics of ggplot2
+The `ggplot2` package revolves around the `ggplot` function. We first specify the data, then the aesthetics, and finally the type of plot we would like to make. Further customization is possible, but we won't have time to talk much about those. the [ggplot2](http://docs.ggplot2.org/dev/index.html) documentation is a really helpful reference for understanding how to customize plots. 
+
+We will work with the `pew` dataset that is part of the `tidyr` vignette, but we need to download it from online.
+
+```{r}
+library(cowplot)
+pew <- read_csv("https://raw.githubusercontent.com/hadley/tidyr/master/vignettes/pew.csv")
+
+pew %>% ggplot(aes(x = religion, y = `<$10k`)) + geom_bar(stat = "identity")
+
+pew %>% ggplot(aes(x = `<$10k`, y = `>150k`)) + geom_point()
+
+```
+
+But what if we wanted to plot multiple income brackets? We would need to specify each column individually, and then somehow manually arrange them on the figure. This is where the `tidyr` package comes into play, which we will learn about next.
+
+### Exercise 3a
+Use the `gapminder` dataset and try to create a boxplot (`geom_boxplot()`) for the life expectancy of each continent.
+
+```{r}
+# R Code here
+
+```
+
+
+## Basics of tidyr
+The `tidyr` package contains many useful functions for cleaning and reshaping your data, but we will mainly talk about two of those (`spread` and `gather`). These functions are used to respectively convert long data to wide and wide data to long. Since it's more common for data to start out in wide format, we will primarily focus on the `gather` function. Tidy data are defined by the following two characteristics:
+
+1. Every variable forms a column
+2. Each observation forms a row
+
+What form are our `pew` data in?
+
+```{r}
+pew %>% head()
+```
+
+### `gather`
+The pew data are in what we call "wide" data format, where each row corresponds to a class and the columns correspond to characterisitics (observations) of that class. If we wanted to plot a bar for each observation, we need to convert our "wide" data to "long" formatting using the `gather` function from `tidyr`. 
+
+`gather(key=observation_name, value = data_name, columns_being_gathered)`
+
+```{r}
+# We want all columns gathered except for the religion column:
+pew %>% gather(key=income, value=frequency, -religion)
+
+# Alternatively:
+pew %>% gather(key=income, value=frequency, 2:11)
+
+```
+
+
+
+
