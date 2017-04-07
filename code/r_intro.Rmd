@@ -30,7 +30,7 @@ Here is a chunk of R code that installs all of the packages that will be used du
 # Using package functions
 The `ggmap` package is used for plotting maps and spatial data. We will use it today to learn how to run code in R, and to play around with functions a bit. 
 
-Note: You can supply arguments to chunks that can customize the behavior of those chunks. This chunk has the argument `cache=TRUE` supplied to it. This just tells the chunk to store the comet variable, which makes the document quicker to run if you convert it to html multiple times.
+Note: You can supply arguments to chunks that can customize the behavior of those chunks. This chunk has the argument `cache=TRUE` supplied to it. This just tells the chunk to store the data and plots, so that knitting the document into an html or pdf is quicker (following the first knit).
 
 ```{r, cache=TRUE}
 library(ggmap)
@@ -80,7 +80,7 @@ The `filter` and `select` functions allow for easy subsetting of the data (selec
 
 We can link functions/commands together using the `%>%` operator. `%>%` takes the output of the left function or variable and puts it by default as the first argument to the right function. So `df %>% head()` is the same as `head(df)`.
 
-```{r, cache=TRUE}
+```{r}
 library(tidyverse)
 library(gapminder)
 
@@ -111,9 +111,9 @@ Try to use `filter()` and `select()` to subset your data to include only the cou
 ```
 
 ## Using `mutate`, `group_by`, and `summarise`
-The `mutate` is a function that can add columns to data frames. Often times we make new columns in data frames out of combinations of old columns, and `mutate` makes this fairly straightforward. 
+`mutate` is a function that can add columns to data frames. Often times we make new columns in data frames out of combinations of old columns, and `mutate` makes this fairly straightforward. 
 
-`group_by` and `summarise` are commonly used in tandem. Often times we want to summarise data for a specific group of data. For example if we had data for the heights of all people on campus, we might want to know the mean for the two genders. We first would group our data by the gender, and then summarise the data with the mean.
+`group_by` and `summarise` are commonly used in tandem. Often we want to summarise data for a specific group of data. For example if we had data for the heights of all people on campus, we might want to know the mean for the two genders. We first would group our data by the gender, and then summarise the data with the mean.
 
 ```{r, cache=TRUE}
 # Add a gdp column using the per capita gdp and total population
